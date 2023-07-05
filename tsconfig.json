@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "lib": ["ES2022"],
+    "noImplicitAny": true,
+    "module": "CommonJS",
+    "target": "ESNext",
+    "allowJs": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop" : true
+  },
+  "include": ["src/**/*", "index.ts", "test/**/*"],
+  "exclude": ["node_modules"]
+}
