@@ -1,3 +1,5 @@
+import { WebSocket } from "ws";
+
 export interface AuthReq {
     type: 'reg';
     data: AuthData;
@@ -20,8 +22,30 @@ export interface AuthResp {
   id: number;
 }
 
-export interface Player {
-  id: number;
-  name: string;
-  password: string;
+export interface Request {
+  type: Type,
+  data: string,
+  id: number
 }
+
+type Type = 'reg'
+| 'update_winners'
+| 'create_room'
+| 'create_game'
+| 'update_room'
+| 'attack'
+| 'turn'
+| 'finish'
+| 'add_user_to_room'
+
+export interface Room {
+  roomId: number,
+  roomUsers: Player[]
+};
+
+export interface Player {
+  name: string;
+  index: number;
+}
+
+export interface Socket extends WebSocket, Player {};

@@ -1,16 +1,12 @@
-import { RawData } from "ws";
+import WebSocket, { RawData } from "ws";
 import { websocketResponse } from "../models/models";
-import { Player } from "../types/types";
 import { authValidate } from "./validation";
+import db from '../db/db';
+import { Socket } from "../types/types";
 
-let users = new Set();
 let index = 0;
 
-export const addPlayer = (player: Player) => {
-  return users.add(player);
-}
-
-export const registerUser = (data: RawData) => {
+export const registerUser = (ws: WebSocket, data: RawData) => {
   const userData = data.toString();
   const parseData = JSON.parse(userData);
   const user = JSON.parse(parseData.data);
@@ -23,8 +19,6 @@ export const registerUser = (data: RawData) => {
       error: true,
       errorText: 'Name or password is invalid'
     });
-
-    return resp;
   }
 
   resp.data = JSON.stringify({
@@ -35,6 +29,12 @@ export const registerUser = (data: RawData) => {
   });
 
   index++;
-  users.add({ ...user, index: index });
+  (ws as Socket).index = index;
+  db.users.push({ name: user.name, index: index });
   return resp;
+}
+
+export const getUser = (index: number) => {
+  const user = db.users.find(item => item.index === index);
+  return user;
 }
