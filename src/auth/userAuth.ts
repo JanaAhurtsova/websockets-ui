@@ -30,9 +30,10 @@ export const registerUser = (ws: WebSocket, data: RawData) => {
 
   index++;
   (ws as Socket).index = index;
+  (ws as Socket).name = user.name;
   db.users.push({ name: user.name, index: index });
   return resp;
-}
+};
 
 export const getUser = (index: number) => {
   const user = db.users.find(item => item.index === index);

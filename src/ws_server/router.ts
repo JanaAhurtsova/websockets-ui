@@ -1,7 +1,7 @@
 import WebSocket, { RawData } from "ws";
 import { registerUser } from "../auth/userAuth";
 import { Types } from "../types/enum";
-import { createRoom, updateRoom } from "../room/room";
+import { addUserToRoom, createRoom, updateRoom } from "../room/room";
 import { Socket } from "../types/types";
 
 export const Router = async (ws: WebSocket, data: RawData, broadcastMessage: (message: string) => void) => {
@@ -22,13 +22,16 @@ export const Router = async (ws: WebSocket, data: RawData, broadcastMessage: (me
     case Types.CREATE_ROOM: {
       const room = createRoom(ws as Socket);
       if(room) {
-        console.log(room)
         const rooms = updateRoom();
         broadcastMessage(rooms);
       }
       break;
     }
     case Types.ADD_PLAYER: {
+      console.log(parseData.data)
+      addUserToRoom(ws as Socket, parseData.data);
+      const rooms = updateRoom();
+      broadcastMessage(rooms);
       break;
     }
     default: {

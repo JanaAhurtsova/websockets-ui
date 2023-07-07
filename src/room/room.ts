@@ -2,6 +2,8 @@ import { websocketResponse } from "../models/models";
 import { Room, Socket } from "../types/types";
 import db from '../db/db';
 import { getUser } from "../auth/userAuth";
+import { createGame } from "../game/game";
+import { WebSocket } from "ws";
 
 let indexRoom = 0;
 
@@ -45,6 +47,22 @@ export const updateRoom = () => {
   return JSON.stringify(resp);
 }
 
-export const addUserToRoom = () => {
+export const addUserToRoom = (ws: Socket, data: string) => {
+  const index = JSON.parse(data).indexRoom;
+  const room = getRoom(index);
 
+  if (!room) {
+    return;
+  }
+
+  if(room.roomUsers.find(user => user.index === ws.index)) {
+    return;
+  }
+
+  room.roomUsers.push({name: ws.name, index: ws.index});
+
+  room.roomUsers.forEach(user => {
+    const game = createGame(user.index);
+    (ws as WebSocket).send(game);
+  });
 }
