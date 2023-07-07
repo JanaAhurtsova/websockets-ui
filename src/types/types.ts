@@ -40,12 +40,19 @@ type Type = 'reg'
 
 export interface Room {
   roomId: number,
-  roomUsers: Player[]
+  roomUsers: User[]
 };
+
+interface User {
+  name: string;
+  index: number;
+  ws: Socket;
+}
 
 export interface Player {
   name: string;
   index: number;
+  password: string;
 }
 
 export interface Socket extends WebSocket, Player {};

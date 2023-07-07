@@ -20,15 +20,12 @@ export const Router = async (ws: WebSocket, data: RawData, broadcastMessage: (me
       break;
     }
     case Types.CREATE_ROOM: {
-      const room = createRoom(ws as Socket);
-      if(room) {
-        const rooms = updateRoom();
-        broadcastMessage(rooms);
-      }
+      createRoom(ws as Socket);
+      const rooms = updateRoom();
+      broadcastMessage(rooms);
       break;
     }
     case Types.ADD_PLAYER: {
-      console.log(parseData.data)
       addUserToRoom(ws as Socket, parseData.data);
       const rooms = updateRoom();
       broadcastMessage(rooms);

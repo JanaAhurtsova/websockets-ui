@@ -21,17 +21,37 @@ export const registerUser = (ws: WebSocket, data: RawData) => {
     });
   }
 
-  resp.data = JSON.stringify({
-    name: user.name,
-    index: index,
-    error: false,
-    errorText: ''
-  });
-
-  index++;
-  (ws as Socket).index = index;
-  (ws as Socket).name = user.name;
-  db.users.push({ name: user.name, index: index });
+  const player = db.users.find(player => player.name === user.name);
+  if (player) {
+    if(player.password === user.password) {
+      resp.data = JSON.stringify({
+        name: player.name,
+        index: player.index,
+        error: false,
+        errorText: ''
+      });
+    } else {
+      resp.data = JSON.stringify({
+        name: player.name,
+        index: player.index,
+        error: true,
+        errorText: 'Invalid password'
+      });
+    }
+  } else {
+    resp.data = JSON.stringify({
+      name: user.name,
+      index: index,
+      error: false,
+      errorText: ''
+    });
+  
+    index++;
+    (ws as Socket).index = index;
+    (ws as Socket).name = user.name;
+    db.users.push({ name: user.name, index: index, password: user.password });
+  }
+  
   return resp;
 };
 
