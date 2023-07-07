@@ -15,11 +15,12 @@ export const createRoom = (ws: Socket) => {
   const newRoom: Room = {
     roomId: indexRoom,
     roomUsers: [],
+    ws: [ws],
   };
 
   indexRoom++;
   const user = getUser(ws.index);
-  newRoom.roomUsers.push({ name: user.name, index: user.index, ws: ws });
+  newRoom.roomUsers.push({ name: user.name, index: user.index });
   db.rooms.push(newRoom);
 
   return newRoom;
@@ -63,10 +64,10 @@ export const addUserToRoom = (ws: Socket, data: string) => {
     return;
   }
 
-  room.roomUsers.push({ name: ws.name, index: ws.index, ws: ws });
-
-  room.roomUsers.forEach((user) => {
-    const game = createGame(user.index);
-    (user.ws as WebSocket).send(game);
+  room.roomUsers.push({ name: ws.name, index: ws.index });
+  room.ws.push(ws);
+  room.ws.forEach((user) => {
+    const game = createGame(room.roomId, user.index);
+    user.send(game);
   });
 };

@@ -6,10 +6,8 @@ import { Socket } from "../types/types";
 
 let index = 0;
 
-export const registerUser = (ws: WebSocket, data: RawData) => {
-  const userData = data.toString();
-  const parseData = JSON.parse(userData);
-  const user = JSON.parse(parseData.data);
+export const registerUser = (ws: WebSocket, data: string) => {
+  const user = JSON.parse(data);
   const resp = websocketResponse.Reg;
 
   if(!authValidate(user)) {

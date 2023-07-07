@@ -3,13 +3,16 @@ import { registerUser } from "../auth/userAuth";
 import { Types } from "../types/enum";
 import { addUserToRoom, createRoom, updateRoom } from "../room/room";
 import { Socket } from "../types/types";
+import { addShips, startGame } from "../game/game";
 
-export const Router = async (ws: WebSocket, data: RawData, broadcastMessage: (message: string) => void) => {
-  if(!data) {
+export const Router = async (ws: WebSocket, message: RawData, broadcastMessage: (message: string) => void) => {
+  if(!message) {
     return;
   }
 
-  const parseData = JSON.parse(data.toString());
+  const parseData = JSON.parse(message.toString());
+  const data = parseData.data;
+
   switch(parseData.type) {
     case Types.REG: {
       const user = registerUser(ws, data);
@@ -26,9 +29,13 @@ export const Router = async (ws: WebSocket, data: RawData, broadcastMessage: (me
       break;
     }
     case Types.ADD_PLAYER: {
-      addUserToRoom(ws as Socket, parseData.data);
+      addUserToRoom(ws as Socket, data);
       const rooms = updateRoom();
       broadcastMessage(rooms);
+      break;
+    }
+    case Types.ADD_SHIP: {
+      addShips(data);
       break;
     }
     default: {
