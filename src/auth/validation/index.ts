@@ -1,5 +1,4 @@
 import { AuthData } from "../../types/types";
-import db from '../../db/db';
 
 export const authValidate = (data: AuthData) => {
   if(!data.name) {

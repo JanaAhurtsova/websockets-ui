@@ -1,7 +1,7 @@
-import { Player, Room } from "../types/types";
+import { Player, Room, Winner } from "../types/types";
 
 export default {
   users: [] as Player[],
-  user: {} as Player,
-  rooms: [] as Room[]
+  rooms: [] as Room[],
+  winners: [] as Winner[]
 }

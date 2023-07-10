@@ -6,3 +6,9 @@ export enum Types {
   ATTACK = 'attack',
   RANDOM_ATTACK = "randomAttack"
 }
+
+export enum Status {
+  MISS = 'miss',
+  KILLED = 'killed',
+  SHOT = 'shot'
+}

@@ -1,29 +1,30 @@
 import { websocketResponse } from '../models/models';
 import { Room, Socket } from '../types/types';
 import db from '../db/db';
-import { getUser } from '../auth/userAuth';
-import { createGame } from '../game/game';
-import { WebSocket } from 'ws';
+import { getUser } from '../auth/user';
+import { createGame } from '../game/serverResponse';
 
 let indexRoom = 0;
 
 export const createRoom = (ws: Socket) => {
   const room = getRoomByUserIndex(ws.index);
+
   if (room) {
     return;
   }
+
   const newRoom: Room = {
     roomId: indexRoom,
     roomUsers: [],
-    ws: [ws],
+    ships: new Map(),
+    shots: {},
+    shipsData: new Map()
   };
 
   indexRoom++;
   const user = getUser(ws.index);
   newRoom.roomUsers.push({ name: user.name, index: user.index });
   db.rooms.push(newRoom);
-
-  return newRoom;
 };
 
 export const getAvailableRooms = () => {
@@ -65,9 +66,9 @@ export const addUserToRoom = (ws: Socket, data: string) => {
   }
 
   room.roomUsers.push({ name: ws.name, index: ws.index });
-  room.ws.push(ws);
-  room.ws.forEach((user) => {
+  room.roomUsers.forEach((user) => {
     const game = createGame(room.roomId, user.index);
-    user.send(game);
+    const player = getUser(user.index);
+    player.ws.send(game);
   });
 };

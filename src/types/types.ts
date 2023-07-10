@@ -42,8 +42,13 @@ type Type =
 export interface Room {
   roomId: number;
   roomUsers: User[];
-  ws: Socket[];
-  ships?: Map<number, Ships[]>
+  ships: Map<number, Ships[]>;
+  shots: Shot;
+  shipsData: Map<number, ShipData[]>
+}
+
+export interface Shot {
+  [key: number]: Position[]
 }
 
 interface User {
@@ -55,6 +60,7 @@ export interface Player {
   name: string;
   index: number;
   password: string;
+  ws: Socket;
 }
 
 export interface Socket extends WebSocket, Player {}
@@ -68,3 +74,19 @@ export interface Ships {
   length: number;
   type: 'small' | 'medium' | 'large' | 'huge';
 }
+
+export interface Winner {
+  name: string,
+  wins: number
+}
+
+export interface Position {
+  x: number,
+  y: number
+}
+
+export interface ShipData {
+  lengthAfterShot: number,
+  coords: Position[]
+}
+
