@@ -1,10 +1,10 @@
-import { WebSocket } from 'ws';
 import { getUser } from '../auth/user';
-import { getRoom, getRoomByUserIndex } from '../room/room';
+import { getRoom } from '../room/room';
 import { Status } from '../types/enum';
-import { Position, Room, ShipData, Socket } from '../types/types';
-import { updateWinners, winnersUpdate } from '../winners/winners';
+import { Position, Room, ShipData } from '../types/types';
+import { updateWinners } from '../winners/winners';
 import { attackResp, finishGame, startGame, turn } from './serverResponse';
+import db from '../db/db'
 
 let currentUserId: number;
 
@@ -39,7 +39,7 @@ export const attack = (data: string) => {
   const { gameId, x, y, indexPlayer } = JSON.parse(data);
 
   const room = getRoom(gameId);
-  const position = x && y ? { x, y } : generateRandomShot(gameId, indexPlayer);
+  const position = x !== undefined && y !==undefined ? { x, y } : generateRandomShot(gameId, indexPlayer);
   const enemyId = getNextPlayer(room, indexPlayer);
   const { status, endOfTheGame, winnerId } = getStatus(gameId, indexPlayer, enemyId, position);
 
@@ -47,11 +47,16 @@ export const attack = (data: string) => {
     return endOfTheGame;
   }
 
+  const attackResult = attackResp(position, indexPlayer, status);
+  console.log(`Response for attack: ${attackResult}`);
+  if (endOfTheGame) {
+    updateWinners(winnerId);
+  }
+  const res = finishGame(winnerId);
+
   room.roomUsers.forEach((user) => {
     const player = getUser(user.index);
-    const attackResult = attackResp(position, indexPlayer, status);
     player.ws.send(attackResult);
-    console.log(`Response for attack: ${attackResult}`);
 
     if (status === Status.MISS) {
       const playerTurn = turn(enemyId);
@@ -65,10 +70,8 @@ export const attack = (data: string) => {
     }
 
     if (endOfTheGame) {
-      updateWinners(winnerId);
-      const res = finishGame(winnerId);
       player.ws.send(res);
-      console.log(`Response for finish: ${attackResult}`);
+      console.log(`Response for finish: ${res}`);
     }
   });
 
@@ -118,7 +121,7 @@ function checkEndOfTheGame(room: Room, enemyId: number) {
   return isEndGame ? true : false;
 }
 
-function getNextPlayer(room: Room, currentPlayer: number) {
+export const getNextPlayer = (room: Room, currentPlayer: number) => {
   const { index } = room.roomUsers.find(({ index }) => index !== currentPlayer);
   return index;
 }
@@ -165,18 +168,4 @@ function createShipsData(room: Room) {
     });
     room.shipsData.set(playerId, playerShipsData);
   });
-}
-
-export const endGame = (ws: WebSocket, broadcastMessage: (message: string) => void) => {
-  const playerId = (ws as Socket).index;
-  const room = getRoomByUserIndex(playerId);
-  if (room) {
-    const winner = getNextPlayer(room, playerId);
-    const winnerWS = getUser(winner);
-    updateWinners(winner);
-    const result = winnersUpdate();
-    winnerWS.ws.send(result);
-    const finish = finishGame(winner);
-    broadcastMessage(finish);
-  }
 }

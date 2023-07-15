@@ -2,7 +2,10 @@ import { websocketResponse } from '../models/models';
 import { Room, Socket } from '../types/types';
 import db from '../db/db';
 import { getUser } from '../auth/user';
-import { createGame } from '../game/serverResponse';
+import { createGame, finishGame } from '../game/serverResponse';
+import WebSocket from 'ws';
+import { updateWinners, winnersUpdate } from '../winners/winners';
+import { getNextPlayer } from '../game/game';
 
 let indexRoom = 0;
 
@@ -72,3 +75,17 @@ export const addUserToRoom = (ws: Socket, data: string) => {
     player.ws.send(game);
   });
 };
+
+export const endGame = (ws: WebSocket, broadcastMessage: (message: string) => void) => {
+  const playerId = (ws as Socket).index;
+  const room = getRoomByUserIndex(playerId);
+  if (room) {
+    const winner = getNextPlayer(room, playerId);
+    const winnerWS = getUser(winner);
+    updateWinners(winner);
+    const result = winnersUpdate();
+    winnerWS.ws.send(result);
+    const finish = finishGame(winner);
+    broadcastMessage(finish);
+  }
+}

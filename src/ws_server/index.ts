@@ -1,7 +1,7 @@
 import { WebSocketServer } from 'ws';
 import { Router } from './router';
 import { userDisconnect } from '../auth/user';
-import { endGame } from '../game/game';
+import { endGame } from '../room/room';
 
 export const wsServer = (PORT: number) => {
   const server = new WebSocketServer({ port: PORT });
