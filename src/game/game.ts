@@ -1,8 +1,9 @@
+import { WebSocket } from 'ws';
 import { getUser } from '../auth/user';
-import { getRoom } from '../room/room';
+import { getRoom, getRoomByUserIndex } from '../room/room';
 import { Status } from '../types/enum';
-import { Position, Room, ShipData } from '../types/types';
-import { updateWinners } from '../winners/winners';
+import { Position, Room, ShipData, Socket } from '../types/types';
+import { updateWinners, winnersUpdate } from '../winners/winners';
 import { attackResp, finishGame, startGame, turn } from './serverResponse';
 
 let currentUserId: number;
@@ -36,7 +37,7 @@ export const addShips = (data: string) => {
 
 export const attack = (data: string) => {
   const { gameId, x, y, indexPlayer } = JSON.parse(data);
-  
+
   const room = getRoom(gameId);
   const position = x && y ? { x, y } : generateRandomShot(gameId, indexPlayer);
   const enemyId = getNextPlayer(room, indexPlayer);
@@ -57,13 +58,13 @@ export const attack = (data: string) => {
       player.ws.send(playerTurn);
       currentUserId = enemyId;
       console.log(`Turn: ${playerTurn}`);
-    }  else {
+    } else {
       const playerTurn = turn(indexPlayer);
       player.ws.send(playerTurn);
       console.log(`Turn: ${playerTurn}`);
     }
 
-    if(endOfTheGame) {
+    if (endOfTheGame) {
       updateWinners(winnerId);
       const res = finishGame(winnerId);
       player.ws.send(res);
@@ -85,23 +86,23 @@ function getStatus(roomId: number, indexPlayer: number, enemyId: number, positio
     if (coords.some((coord) => coord.x === position.x && coord.y === position.y)) {
       lengthAfterShot--;
 
-      if(lengthAfterShot === 0) {
+      if (lengthAfterShot === 0) {
         status = Status.KILLED;
         const player = getUser(indexPlayer);
         const enemy = getUser(enemyId);
 
-        ship.coords.forEach(coord => {
+        ship.coords.forEach((coord) => {
           const result = attackResp(coord, indexPlayer, status);
           player.ws.send(result);
           enemy.ws.send(result);
-        })
+        });
       } else {
         status = Status.SHOT;
       }
-    } 
-    return { lengthAfterShot, coords }
+    }
+    return { lengthAfterShot, coords };
   });
-  
+
   room.shipsData.set(enemyId, updatedShipsData);
 
   const endOfTheGame = checkEndOfTheGame(room, enemyId);
@@ -110,8 +111,10 @@ function getStatus(roomId: number, indexPlayer: number, enemyId: number, positio
   return { status, endOfTheGame, winnerId };
 }
 
-function checkEndOfTheGame (room: Room, enemyId: number) {
-  const isEndGame = room.shipsData.get(enemyId).every(({ lengthAfterShot }) => lengthAfterShot === 0);
+function checkEndOfTheGame(room: Room, enemyId: number) {
+  const isEndGame = room.shipsData
+    .get(enemyId)
+    .every(({ lengthAfterShot }) => lengthAfterShot === 0);
   return isEndGame ? true : false;
 }
 
@@ -150,7 +153,7 @@ function createShipsData(room: Room) {
     ships.forEach((ship) => {
       const shipData: ShipData = {
         lengthAfterShot: ship.length,
-        coords: []
+        coords: [],
       };
       for (let i = 0; i < ship.length; i++) {
         shipData.coords.push({
@@ -162,4 +165,18 @@ function createShipsData(room: Room) {
     });
     room.shipsData.set(playerId, playerShipsData);
   });
+}
+
+export const endGame = (ws: WebSocket, broadcastMessage: (message: string) => void) => {
+  const playerId = (ws as Socket).index;
+  const room = getRoomByUserIndex(playerId);
+  if (room) {
+    const winner = getNextPlayer(room, playerId);
+    const winnerWS = getUser(winner);
+    updateWinners(winner);
+    const result = winnersUpdate();
+    winnerWS.ws.send(result);
+    const finish = finishGame(winner);
+    broadcastMessage(finish);
+  }
 }

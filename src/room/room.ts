@@ -39,7 +39,7 @@ export const getRoom = (index: number) => {
   return room;
 };
 
-function getRoomByUserIndex(index: number) {
+export const getRoomByUserIndex = (index: number) => {
   const room = db.rooms.find(({ roomUsers }) =>
     roomUsers.find((roomUser) => roomUser.index === index)
   );

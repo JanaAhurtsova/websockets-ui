@@ -1,20 +1,24 @@
-import WebSocket, { RawData } from "ws";
-import { registerUser } from "../auth/userAuth";
-import { Types } from "../types/enum";
-import { addUserToRoom, createRoom, updateRoom } from "../room/room";
-import { Socket } from "../types/types";
-import { addShips, attack } from "../game/game";
-import { winnersUpdate } from "../winners/winners";
+import WebSocket, { RawData } from 'ws';
+import { registerUser } from '../auth/userAuth';
+import { Types } from '../types/enum';
+import { addUserToRoom, createRoom, updateRoom } from '../room/room';
+import { Socket } from '../types/types';
+import { addShips, attack } from '../game/game';
+import { winnersUpdate } from '../winners/winners';
 
-export const Router = async (ws: WebSocket, message: RawData, broadcastMessage: (message: string) => void) => {
-  if(!message) {
+export const Router = async (
+  ws: WebSocket,
+  message: RawData,
+  broadcastMessage: (message: string) => void
+) => {
+  if (!message) {
     return;
   }
 
   const parseData = JSON.parse(message.toString());
   const data = parseData.data;
-  
-  switch(parseData.type) {
+
+  switch (parseData.type) {
     case Types.REG: {
       const user = registerUser(ws, data);
       ws.send(JSON.stringify(user));
@@ -52,7 +56,7 @@ export const Router = async (ws: WebSocket, message: RawData, broadcastMessage: 
     case Types.ATTACK:
     case Types.RANDOM_ATTACK: {
       const endOfTheGame = attack(data);
-      if (endOfTheGame ) {
+      if (endOfTheGame) {
         const winners = winnersUpdate();
         broadcastMessage(winners);
       }
@@ -62,5 +66,5 @@ export const Router = async (ws: WebSocket, message: RawData, broadcastMessage: 
     default: {
       console.log('Invalid command');
     }
-  };
+  }
 };

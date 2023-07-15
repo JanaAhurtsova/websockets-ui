@@ -1,18 +1,19 @@
 import { WebSocketServer } from 'ws';
 import { Router } from './router';
 import { userDisconnect } from '../auth/user';
+import { endGame } from '../game/game';
 
 export const wsServer = (PORT: number) => {
   const server = new WebSocketServer({ port: PORT });
+  console.log(`WebSocket server is listening on the ${PORT} port!`);
   server.on('connection', (ws) => {
-    console.log(`WebSocket server is listening on the ${PORT} port!`);
     ws.on('message', async function message(data) {
       await Router(ws, data, broadcastMessage);
     });
 
     ws.on('close', () => {
       ws.close();
-
+      endGame(ws, broadcastMessage);
       userDisconnect(ws);
     });
     

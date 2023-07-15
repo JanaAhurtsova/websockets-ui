@@ -87,6 +87,6 @@ export interface Position {
 
 export interface ShipData {
   lengthAfterShot: number,
-  coords: Position[]
+  coords: Position[],
 }
 
