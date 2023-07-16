@@ -11,6 +11,10 @@ export const addShips = (data: string) => {
   const { gameId, ships, indexPlayer } = JSON.parse(data);
   const room = getRoom(gameId);
 
+  if (!room) {
+    return;
+  }
+
   if (room.ships.size === 0) {
     currentUserId = indexPlayer;
   }
@@ -36,16 +40,29 @@ export const addShips = (data: string) => {
 
 export const attack = (data: string) => {
   const { gameId, x, y, indexPlayer } = JSON.parse(data);
-
   const room = getRoom(gameId);
+  const { roomId, roomUsers, shots } = room;
   const position =
     x !== undefined && y !== undefined ? { x, y } : generateRandomShot(gameId, indexPlayer);
   const enemyId = getNextPlayer(room, indexPlayer);
   const { status, endOfTheGame, winnerId } = getStatus(gameId, indexPlayer, enemyId, position);
 
   if (currentUserId !== indexPlayer) {
-    return endOfTheGame;
+    return { endOfTheGame, roomId };
   }
+
+  if (!shots[indexPlayer]) {
+    shots[indexPlayer] = [];
+  }
+
+  if (
+    shots[indexPlayer] &&
+    shots[indexPlayer].some((shot) => shot.x === position.x && shot.y === position.y)
+  ) {
+    return { endOfTheGame, roomId };
+  }
+
+  shots[indexPlayer].push({ x, y });
 
   const attackResult = attackResp(position, indexPlayer, status);
   console.log(`Response for attack: ${attackResult}`);
@@ -54,7 +71,7 @@ export const attack = (data: string) => {
   }
   const res = finishGame(winnerId);
 
-  room.roomUsers.forEach((user) => {
+  roomUsers.forEach((user) => {
     const player = getUser(user.index);
     player.ws.send(attackResult);
 
@@ -68,14 +85,14 @@ export const attack = (data: string) => {
       player.ws.send(playerTurn);
       console.log(`Turn: ${playerTurn}`);
     }
-
+    console.log(endOfTheGame);
     if (endOfTheGame) {
       player.ws.send(res);
       console.log(`Response for finish: ${res}`);
     }
   });
 
-  return endOfTheGame;
+  return { endOfTheGame, roomId };
 };
 
 function getStatus(roomId: number, indexPlayer: number, enemyId: number, position: Position) {

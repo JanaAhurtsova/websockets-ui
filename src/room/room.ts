@@ -49,6 +49,11 @@ export const getRoomByUserIndex = (index: number) => {
   return room;
 };
 
+export const deleteRoom = (roomId: number) => {
+  db.rooms = db.rooms.filter((room) => room.roomId !== roomId);
+  return db.rooms;
+};
+
 export const updateRoom = () => {
   const resp = websocketResponse.UpdateRoom;
   const rooms = getAvailableRooms();
@@ -79,6 +84,7 @@ export const addUserToRoom = (ws: Socket, data: string) => {
 export const endGame = (ws: WebSocket, broadcastMessage: (message: string) => void) => {
   const playerId = (ws as Socket).index;
   const room = getRoomByUserIndex(playerId);
+  const { roomId } = room;
   if (room) {
     const winner = getNextPlayer(room, playerId);
     const winnerWS = getUser(winner);
@@ -87,5 +93,6 @@ export const endGame = (ws: WebSocket, broadcastMessage: (message: string) => vo
     winnerWS.ws.send(result);
     const finish = finishGame(winner);
     broadcastMessage(finish);
+    deleteRoom(roomId);
   }
 };

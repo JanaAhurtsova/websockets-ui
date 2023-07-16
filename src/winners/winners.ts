@@ -8,7 +8,7 @@ export const updateWinners = (winnerId: number) => {
     name === user.name ? { name, wins: wins + 1 } : { name, wins }
   );
   db.winners = updatedWins;
-  db.winners.sort((a, b) => a.wins - b.wins).slice(10);
+  db.winners.sort((a, b) => b.wins - a.wins).slice(10);
 };
 
 export const winnersUpdate = () => {

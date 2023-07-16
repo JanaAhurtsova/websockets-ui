@@ -1,7 +1,7 @@
 import WebSocket, { RawData } from 'ws';
 import { registerUser } from '../auth/userAuth';
 import { Types } from '../types/enum';
-import { addUserToRoom, createRoom, updateRoom } from '../room/room';
+import { addUserToRoom, createRoom, deleteRoom, updateRoom } from '../room/room';
 import { Socket } from '../types/types';
 import { addShips, attack } from '../game/game';
 import { winnersUpdate } from '../winners/winners';
@@ -55,10 +55,11 @@ export const Router = async (
     }
     case Types.ATTACK:
     case Types.RANDOM_ATTACK: {
-      const endOfTheGame = attack(data);
+      const { endOfTheGame, roomId } = attack(data);
       if (endOfTheGame) {
         const winners = winnersUpdate();
         broadcastMessage(winners);
+        deleteRoom(roomId);
       }
       break;
     }
