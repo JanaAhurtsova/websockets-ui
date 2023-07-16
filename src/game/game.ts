@@ -55,14 +55,12 @@ export const attack = (data: string) => {
     shots[indexPlayer] = [];
   }
 
-  if (
-    shots[indexPlayer] &&
-    shots[indexPlayer].some((shot) => shot.x === position.x && shot.y === position.y)
-  ) {
-    return { endOfTheGame, roomId };
+  if (x !== undefined && y !== undefined) {
+    if (shots[indexPlayer].some((shot) => shot.x === x && shot.y === y)) {
+      return { endOfTheGame, roomId };
+    }
+    shots[indexPlayer].push({ x, y });
   }
-
-  shots[indexPlayer].push({ x, y });
 
   const attackResult = attackResp(position, indexPlayer, status);
   console.log(`Response for attack: ${attackResult}`);
@@ -156,10 +154,7 @@ function generateRandomShot(gameId: number, indexPlayer: number) {
     room.shots[indexPlayer] = [];
   }
 
-  if (
-    room.shots[indexPlayer] &&
-    room.shots[indexPlayer].some((shot) => shot.x === position.x && shot.y === position.y)
-  ) {
+  if (room.shots[indexPlayer].some((shot) => shot.x === position.x && shot.y === position.y)) {
     generateRandomShot(gameId, indexPlayer);
   }
 
