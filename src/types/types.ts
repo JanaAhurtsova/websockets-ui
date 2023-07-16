@@ -44,11 +44,11 @@ export interface Room {
   roomUsers: User[];
   ships: Map<number, Ships[]>;
   shots: Shot;
-  shipsData: Map<number, ShipData[]>
+  shipsData: Map<number, ShipData[]>;
 }
 
 export interface Shot {
-  [key: number]: Position[]
+  [key: number]: Position[];
 }
 
 interface User {
@@ -76,17 +76,16 @@ export interface Ships {
 }
 
 export interface Winner {
-  name: string,
-  wins: number
+  name: string;
+  wins: number;
 }
 
 export interface Position {
-  x: number,
-  y: number
+  x: number;
+  y: number;
 }
 
 export interface ShipData {
-  lengthAfterShot: number,
-  coords: Position[],
+  lengthAfterShot: number;
+  coords: Position[];
 }
-

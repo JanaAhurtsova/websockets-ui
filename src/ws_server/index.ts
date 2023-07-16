@@ -16,13 +16,13 @@ export const wsServer = (PORT: number) => {
       endGame(ws, broadcastMessage);
       userDisconnect(ws);
     });
-    
+
     ws.on('error', () => {
       console.log('Error!');
     });
   });
 
-  function broadcastMessage (message: string) {
+  function broadcastMessage(message: string) {
     server.clients.forEach((client) => {
       client.send(message);
     });

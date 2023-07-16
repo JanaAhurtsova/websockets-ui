@@ -21,7 +21,7 @@ export const createRoom = (ws: Socket) => {
     roomUsers: [],
     ships: new Map(),
     shots: {},
-    shipsData: new Map()
+    shipsData: new Map(),
   };
 
   indexRoom++;
@@ -47,7 +47,7 @@ export const getRoomByUserIndex = (index: number) => {
     roomUsers.find((roomUser) => roomUser.index === index)
   );
   return room;
-}
+};
 
 export const updateRoom = () => {
   const resp = websocketResponse.UpdateRoom;
@@ -88,4 +88,4 @@ export const endGame = (ws: WebSocket, broadcastMessage: (message: string) => vo
     const finish = finishGame(winner);
     broadcastMessage(finish);
   }
-}
+};

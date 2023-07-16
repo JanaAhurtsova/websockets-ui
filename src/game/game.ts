@@ -4,7 +4,6 @@ import { Status } from '../types/enum';
 import { Position, Room, ShipData } from '../types/types';
 import { updateWinners } from '../winners/winners';
 import { attackResp, finishGame, startGame, turn } from './serverResponse';
-import db from '../db/db'
 
 let currentUserId: number;
 
@@ -39,7 +38,8 @@ export const attack = (data: string) => {
   const { gameId, x, y, indexPlayer } = JSON.parse(data);
 
   const room = getRoom(gameId);
-  const position = x !== undefined && y !==undefined ? { x, y } : generateRandomShot(gameId, indexPlayer);
+  const position =
+    x !== undefined && y !== undefined ? { x, y } : generateRandomShot(gameId, indexPlayer);
   const enemyId = getNextPlayer(room, indexPlayer);
   const { status, endOfTheGame, winnerId } = getStatus(gameId, indexPlayer, enemyId, position);
 
@@ -84,7 +84,8 @@ function getStatus(roomId: number, indexPlayer: number, enemyId: number, positio
   const enemyShips = room.shipsData.get(enemyId);
 
   const updatedShipsData = enemyShips.map((ship) => {
-    let { lengthAfterShot, coords } = ship;
+    let { lengthAfterShot } = ship;
+    const { coords } = ship;
 
     if (coords.some((coord) => coord.x === position.x && coord.y === position.y)) {
       lengthAfterShot--;
@@ -124,7 +125,7 @@ function checkEndOfTheGame(room: Room, enemyId: number) {
 export const getNextPlayer = (room: Room, currentPlayer: number) => {
   const { index } = room.roomUsers.find(({ index }) => index !== currentPlayer);
   return index;
-}
+};
 
 function generateRandomShot(gameId: number, indexPlayer: number) {
   const room = getRoom(gameId);

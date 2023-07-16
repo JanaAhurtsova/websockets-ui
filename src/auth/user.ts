@@ -3,9 +3,9 @@ import { Socket } from '../types/types';
 import db from '../db/db';
 
 export const getUser = (index: number) => {
-  const user = db.users.find(item => item.index === index);
+  const user = db.users.find((item) => item.index === index);
   return user;
-}
+};
 
 export const userDisconnect = (ws: WebSocket) => {
   const { name } = ws as Socket;

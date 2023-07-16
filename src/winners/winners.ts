@@ -4,9 +4,9 @@ import { websocketResponse } from '../models/models';
 
 export const updateWinners = (winnerId: number) => {
   const user = getUser(winnerId);
-  const updatedWins = db.winners.map(({ name, wins }) => (
+  const updatedWins = db.winners.map(({ name, wins }) =>
     name === user.name ? { name, wins: wins + 1 } : { name, wins }
-  ));
+  );
   db.winners = updatedWins;
   db.winners.sort((a, b) => a.wins - b.wins).slice(10);
 };
