@@ -41,7 +41,7 @@ export const addShips = (data: string) => {
 export const attack = (data: string) => {
   const { gameId, x, y, indexPlayer } = JSON.parse(data);
   const room = getRoom(gameId);
-  const { roomId, roomUsers, shots } = room;
+  const { roomId, roomUsers } = room;
   const position =
     x !== undefined && y !== undefined ? { x, y } : generateRandomShot(gameId, indexPlayer);
   const enemyId = getNextPlayer(room, indexPlayer);
@@ -49,17 +49,6 @@ export const attack = (data: string) => {
 
   if (currentUserId !== indexPlayer) {
     return { endOfTheGame, roomId };
-  }
-
-  if (!shots[indexPlayer]) {
-    shots[indexPlayer] = [];
-  }
-
-  if (x !== undefined && y !== undefined) {
-    if (shots[indexPlayer].some((shot) => shot.x === x && shot.y === y)) {
-      return { endOfTheGame, roomId };
-    }
-    shots[indexPlayer].push({ x, y });
   }
 
   const attackResult = attackResp(position, indexPlayer, status);
@@ -83,7 +72,6 @@ export const attack = (data: string) => {
       player.ws.send(playerTurn);
       console.log(`Turn: ${playerTurn}`);
     }
-    console.log(endOfTheGame);
     if (endOfTheGame) {
       player.ws.send(res);
       console.log(`Response for finish: ${res}`);
@@ -97,12 +85,13 @@ function getStatus(roomId: number, indexPlayer: number, enemyId: number, positio
   const room = getRoom(roomId);
   let status: Status = Status.MISS;
   const enemyShips = room.shipsData.get(enemyId);
+  const { x, y } = position;
 
   const updatedShipsData = enemyShips.map((ship) => {
     let { lengthAfterShot } = ship;
     const { coords } = ship;
 
-    if (coords.some((coord) => coord.x === position.x && coord.y === position.y)) {
+    if (coords.some((coord) => coord.x === x && coord.y === y)) {
       lengthAfterShot--;
 
       if (lengthAfterShot === 0) {
@@ -123,6 +112,16 @@ function getStatus(roomId: number, indexPlayer: number, enemyId: number, positio
   });
 
   room.shipsData.set(enemyId, updatedShipsData);
+  if (!room.shots[indexPlayer]) {
+    room.shots[indexPlayer] = [];
+  }
+
+  if (x !== undefined && y !== undefined) {
+    if (room.shots[indexPlayer].some((shot) => shot.x === x && shot.y === y)) {
+      status = Status.MISS;
+    }
+    room.shots[indexPlayer].push({ x, y });
+  }
 
   const endOfTheGame = checkEndOfTheGame(room, enemyId);
   const winnerId = indexPlayer;

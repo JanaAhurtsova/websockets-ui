@@ -84,8 +84,8 @@ export const addUserToRoom = (ws: Socket, data: string) => {
 export const endGame = (ws: WebSocket, broadcastMessage: (message: string) => void) => {
   const playerId = (ws as Socket).index;
   const room = getRoomByUserIndex(playerId);
-  const { roomId } = room;
   if (room) {
+    const { roomId } = room;
     const winner = getNextPlayer(room, playerId);
     const winnerWS = getUser(winner);
     updateWinners(winner);
